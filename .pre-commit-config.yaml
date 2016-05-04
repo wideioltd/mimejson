@@ -20,6 +20,7 @@
 -   repo: git://github.com/FalconSocial/pre-commit-python-sorter
     sha: b7f5d468c67c3c4a6ea7cdf68c40778095b0f19b
     hooks:
+    -   id: pep257
     -   id: python-import-sorter
         args:
         - --silent-overwrite
