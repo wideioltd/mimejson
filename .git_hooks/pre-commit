@@ -6,11 +6,11 @@ SCRIPT_PATH="$0"; while [ -h "$SCRIPT_PATH" ]; do SCRIPT_PATH=$(readlink "$SCRIP
 HOOK_STATUS=0
 
 # prevent master commits
-for m in "$HOOKS_DIR/pre-commit.d/*.sh"; then
+for m in "$HOOKS_DIR"/pre-commit.d/*.sh; do
   . "$m"
   if [ $? -ne 0 ]; then
     HOOK_STATUS=1
   fi
-fi 
+done
 
 exit $HOOK_STATUS
