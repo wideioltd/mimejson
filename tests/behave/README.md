@@ -8,3 +8,6 @@ It may also be used for project management to define priority between
 tasks. Identify what is fixed and what is not etc...
 
 Core projects will be required to have this file.
+
+Each folder at the root is supposed to answer the question 'WHY this
+project?'
