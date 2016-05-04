@@ -1,2 +1,3 @@
 #!/bin/bash
-exec pre-commit
+pre-commit
+return $?

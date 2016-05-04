@@ -1,6 +1,8 @@
 #!/bin/bash
 if [ -d '.pytest-runner' ] ; then
-  exec .pytest-runner
+  . .pytest-runner
+  echo $?
 else
-  exec py.test
+  py.test
+  return $?
 fi
