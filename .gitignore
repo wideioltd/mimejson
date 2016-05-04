@@ -1,0 +1,14 @@
+.idea
+.virtualenv
+__pycache__
+*.pyc
+.coverage
+*.log
+*.tmp
+.DS_Store
+_build
+*.egg*
+coverage.xml
+*.swp
+*~
+*.bak

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+SCRIPT_PATH="$0"; while [ -h "$SCRIPT_PATH" ]; do SCRIPT_PATH=$(readlink "$SCRIPT_PATH"); done
+. "$(dirname $SCRIPT_PATH)/versioning/functions.sh"
+
+HOOK_STATUS=0
+
+# prevent master commits
+for m in "$HOOKS_DIR/pre-commit.d/*.sh"; then
+  . "$m"
+  if [ $? -ne 0 ]; then
+    HOOK_STATUS=1
+  fi
+fi 
+
+exit $HOOK_STATUS
