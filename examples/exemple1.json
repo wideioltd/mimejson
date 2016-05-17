@@ -1,0 +1,6 @@
+{
+    "image1": {"$path$": "http://30daysout.files.wordpress.com/2008/08/toto-the-early-days1.jpg", "$to_url$": "local", "$lenght$": 1571301, "$mimetype$": "image/jpg"},
+    "image2": {"$path$": "http://30daysout.files.wordpress.com/2008/08/toto-the-early-days1.jpg", "$to_url$": "local", "$lenght$": 1571301, "$mimetype$": "image/jpg"},
+    "image3": {"$path$": "http://30daysout.files.wordpress.com/2008/08/toto-the-early-days1.jpg", "$to_url$": "local", "$lenght$": 1571301, "$mimetype$": "image/jpg"},
+    "image4": {"$path$": "http://30daysout.files.wordpress.com/2008/08/toto-the-early-days1.jpg", "$to_url$": "local", "$lenght$": 1571301, "$mimetype$": "image/jpg"}
+}

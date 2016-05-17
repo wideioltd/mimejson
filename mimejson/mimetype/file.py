@@ -1,4 +1,6 @@
-# Copyright (c) WIDE IO LTD 2014-2016
+# ############################################################################
+# |W|I|D|E|I|O|L|T|D|W|I|D|E|I|O|L|T|D|W|I|D|E|I|O|L|T|D|W|I|D|E|I|O|L|T|D|
+# Copyright (c) WIDE IO LTD
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -24,3 +26,32 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
+# |D|O|N|O|T|R|E|M|O|V|E|!|D|O|N|O|T|R|E|M|O|V|E|!|D|O|N|O|T|R|E|M|O|V|E|!|
+# ############################################################################
+import os
+import uuid
+
+
+class Serializer:
+    mimetype = ("file", "application/bytes")
+
+    @staticmethod
+    def can_apply(obj):
+        return isinstance(obj, file)
+
+    @classmethod
+    def serialize(cls, obj, pathdir):
+        if (hasattr(obj, "name")) and (os.path.exists(obj.name)):
+            return {'$path$': obj.name, '$length$': os.stat(obj.name).st_size,
+                    '$mimetype$': cls.mimetype[-1]}
+        fn = os.path.join(pathdir, "%s_package" % (uuid.uuid1(),))
+        with open(fn, 'w') as out:
+            out.write(obj.read())
+            out.close()
+        obj.close()
+        return {'$path$': fn, '$length$': os.stat(fn).st_size,
+                '$mimetype$': cls.mimetype[-1]}
+
+    @staticmethod
+    def deserialize(obj, pathdir):
+        return open(pathdir, 'r')

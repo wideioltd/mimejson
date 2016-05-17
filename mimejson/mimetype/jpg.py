@@ -1,4 +1,6 @@
-# Copyright (c) WIDE IO LTD 2014-2016
+# ############################################################################
+# |W|I|D|E|I|O|L|T|D|W|I|D|E|I|O|L|T|D|W|I|D|E|I|O|L|T|D|W|I|D|E|I|O|L|T|D|
+# Copyright (c) WIDE IO LTD
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -24,3 +26,34 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
+# |D|O|N|O|T|R|E|M|O|V|E|!|D|O|N|O|T|R|E|M|O|V|E|!|D|O|N|O|T|R|E|M|O|V|E|!|
+# ############################################################################
+import os
+import uuid
+
+import PIL.PngImagePlugin
+
+
+class Serializer:
+    """
+    MIMEJSON serializer that allows to dump and load JPG images attached to objects.
+    """
+    mimetype = "image/jpg"
+
+    @staticmethod
+    def can_apply(obj):
+        cl = [PIL.JpegImagePlugin.JpegImageFile, PIL.Image.Image]
+        return hasattr(obj, "__class__") and obj.__class__ in cl
+
+    @classmethod
+    def serialize(cls, obj, pathdir):
+        if not os.path.exists(pathdir):
+            os.mkdir(pathdir)
+        fn = os.path.join(pathdir, "%s.jpg" % (uuid.uuid1(),))
+        obj.save(fn)
+        return {'$path$': fn, '$length$': os.stat(fn).st_size,
+                '$mimetype$': cls.mimetype}
+
+    @staticmethod
+    def deserialize(obj, filepath):
+        return PIL.Image.open(filepath)
