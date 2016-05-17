@@ -28,4 +28,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+echo "Run tox to ensure compatibility with all python version : for instance tox -e py27" 1>&2
+
+
 exit 0
