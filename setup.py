@@ -26,6 +26,9 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
+"""
+This is the distribution setup for WIDE IO MIMEJSON library.
+"""
 
 import os
 
@@ -33,11 +36,11 @@ from setuptools import setup
 
 module = "mimejson"
 
-with open(os.path.join(module, 'VERSION'), 'r') as fd:
+with open(os.path.join(os.path.dirname(__file__), module, 'VERSION'), 'r') as fd:
     version = fd.read()
 
 if not version:
-    version = "0"
+    version = "0.0.0"
 
 setup(
     name=module,
@@ -48,18 +51,20 @@ setup(
     url='https://github.com/wideioltd/mimejson/',
     license='BSD',
     classifiers=(
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'Natural Language :: English',
-        'License :: OSI Approved :: Apache Software License',
+        'License :: OSI Approved :: BSD License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: Implementation :: CPython',
     ),
     packages=[module],
-    install_requires=[""],
+    install_requires=["requests"],
     include_package_data=True,
+    package_dir={module: module},
     package_data={
-        '': ['LICENSE']
+        '': ['LICENSE'],
+        module: ['VERSION', 'mimetype/*.py']
     }
 )
