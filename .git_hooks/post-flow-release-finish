@@ -1,0 +1,12 @@
+#!/bin/bash
+
+echo "pushing to remote"
+git push
+git push --tags
+
+echo "pushing to pypi"
+rm -r dist/*
+python setup.py sdist bdist_wheel
+PYPIACCOUNT=$HOME/.pypi.account
+[ -f $PWD/.pypi.account ] && PYPIACCOUNT=$PWD/.pypi.account
+twine register dist/* -u $(cut -d : -f 1 < $PYPIACCOUNT) -p $(cut -d : -f 2 < $PYPIACCOUNT)
