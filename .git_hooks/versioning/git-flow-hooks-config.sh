@@ -1,0 +1,1 @@
+VERSION_FILE="mimejson/VERSION"
