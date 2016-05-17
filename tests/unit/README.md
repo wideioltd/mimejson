@@ -11,5 +11,6 @@ independent.
 - Whenever possible expected outputs and side-effect must be extracted from code by reflexion
 
 In our definition are not to be minimal but shall encompass all
-subelements of code required for the code to work. Mocking must be
-limited to side effects.
+subelements of code required for the code to work.
+
+Mocking must be limited to side effects.
