@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/a2a36d1e8d0e40c5b5d26878998492fb)](https://www.codacy.com/app/bn/mimejson?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=wideioltd/mimejson&amp;utm_campaign=Badge_Grade)
 # MIMEJSON
 
 MIMEJSON is a minimal extension to JSON to allow to perform serialisation and transport of

@@ -1,5 +1,5 @@
 """
-MIMEJSON Serialization
+MIMEJSON Serialization.
 
 MIMEJSON extends JSON to allow automatically serialization of large binary objects as "attached" objects.
 
@@ -10,4 +10,4 @@ import os
 from .mimejson import MIMEJSON
 
 __version__ = open(os.path.join(os.path.dirname(__file__), "VERSION"), "r").read()
-__all__ = (MIMEJSON, __version__)
+__all__ = ('MIMEJSON', '__version__')
