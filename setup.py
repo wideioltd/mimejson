@@ -27,14 +27,14 @@
 # SUCH DAMAGE.
 
 
-from setuptools import setup
-import re
 import os
+
+from setuptools import setup
 
 module = "mimejson"
 
-with open(os.path.join(module, '__init__.py'), 'r') as fd:
-    version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', fd.read(), re.MULTILINE).group(1)
+with open(os.path.join(module, 'VERSION'), 'r') as fd:
+    version = fd.read()
 
 if not version:
     version = "0"
@@ -61,5 +61,5 @@ setup(
     include_package_data=True,
     package_data={
         '': ['LICENSE']
-        }
-    )
+    }
+)
