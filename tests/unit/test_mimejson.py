@@ -56,9 +56,17 @@ def test_mimejson_is_json_equivalent_in_simple_cases():
             assert(mj.dumps(x) == json.dumps(x))
 
 
-def test_mimejson_load_serializers():
+def test_mimejson_load_default_codecs():
     """
     MIMEJSON has a set of native plugins distributed with it.
     """
     with mimejson.MIMEJSON() as mj:
-        assert(len(mj.codecs._register))
+        assert(len(mj.codecs.all_codecs))
+
+
+# def test_mimejson_use_specific_codecs():
+#     """
+#     MIMEJSON has a set of native plugins distributed with it.
+#     """
+#     with mimejson.MIMEJSON() as mj:
+#         pass

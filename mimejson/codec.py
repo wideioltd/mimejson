@@ -46,7 +46,7 @@ class CodecRegister(object):
         """
         Initialize CODEC register.
         """
-        self._register = {}
+        self.all_codecs = {}
 
     @classmethod
     def get_instance(cls):
@@ -116,9 +116,9 @@ class CodecRegister(object):
         """
         if isinstance(codec.mimetype, tuple):
             for m in codec.mimetype:
-                self._register[m] = codec
+                self.all_codecs[m] = codec
         else:
-            self._register[codec.mimetype] = codec
+            self.all_codecs[codec.mimetype] = codec
 
     def __getitem__(self, item):
-        return self._register[item]
+        return self.all_codecs[item]

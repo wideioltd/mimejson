@@ -125,6 +125,15 @@ class HTTPTransport(object):
         res = self.session.post(target_url, files=files, data=data, **self.kwargs)
         return json.loads(res.text)
 
+    def get(self, url):
+        """
+        Receive content from a remote location using the transport.
+
+        :param: files to be sent
+        :data: payload
+        """
+        return self.session.get(url, **self.kwargs).content
+
 
 class MIMEJSON(object):
 
@@ -135,7 +144,7 @@ class MIMEJSON(object):
     TODO: make upload async and parallel
     """
 
-    def __init__(self, server=None, user=None, password=None, basepath=None, use_tmp_storage=True, session=None):
+    def __init__(self, server=None, user=None, password=None, basepath=None, use_tmp_storage=None, session=None):
         """
         Initialise the MIMEJSON serialiser.
 
@@ -145,14 +154,19 @@ class MIMEJSON(object):
         self.codecs = CodecRegister.get_instance()
 
         self.storage = os.getcwd()
-        self.using_tmp_storage = use_tmp_storage
-        if use_tmp_storage:
-            self.storage = os.path.join("/tmp", ".mjson-" + str(os.getpid()))
 
         if basepath:
             self.storage = basepath
+            use_tmp_storage = False
 
-        self.session = session or requests
+        if use_tmp_storage is None:
+            use_tmp_storage = True
+
+        if use_tmp_storage:
+            self.storage = os.path.join("/tmp", ".mjson-" + str(os.getpid()))
+
+        self.using_tmp_storage = use_tmp_storage
+
         self.transport = None
 
         self._objects = {}  # < temporaries (bad design to be removed)
@@ -162,7 +176,7 @@ class MIMEJSON(object):
 
     def __mimejson_encode_item(self, obj, key):
         ret = obj
-        for mc in self.codecs._register.items():
+        for mc in self.codecs.all_codecs.items():
             can_apply = mc[1].can_apply
             if can_apply(obj):
                 ret = mc[1].encode(obj, self.storage)
@@ -177,14 +191,14 @@ class MIMEJSON(object):
     def __mimejson_decode_item(self, obj, key):
         # for each obj of the dictionary, this fct is call
         if isinstance(obj, dict) and "$mimetype$" in obj:
-            if (obj["$mimetype$"]) in self.codecs._register:
+            if obj["$mimetype$"] in self.codecs.all_codecs:
                 path = obj['$path$']
                 f = None
                 if path.startswith("http"):
-                    f = self.session.get(obj['$path$']).content
+                    f = self.transport.get(obj['$path$'])
                     path = f[0]
 
-                obj = self.codecs._register[obj["$mimetype$"]].decode(obj, path)
+                obj = self.codecs.all_codecs[obj["$mimetype$"]].decode(obj, path)
 
                 if f is not None:
                     os.unlink(f[0])
@@ -249,7 +263,7 @@ class MIMEJSON(object):
             data = json.load(json_file)
             json_file.close()
         else:
-            data = self.session.get(uri).json()
+            data = json.loads(self.transport.get(uri))
 
         data = self._mimejson_decode_object(data)
         return data
