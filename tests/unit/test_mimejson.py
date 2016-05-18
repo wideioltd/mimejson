@@ -30,18 +30,35 @@
 # |D|O|N|O|T|R|E|M|O|V|E|!|D|O|N|O|T|R|E|M|O|V|E|!|D|O|N|O|T|R|E|M|O|V|E|!|
 # ############################################################################
 
-import sys
-import os
-sys.path.append(os.getcwd())
-
 import json
+import os
+import sys
+
 import mimejson
 
+sys.path.append(os.getcwd())
+
+
 def test_mimejson_trivial_object():
+    """
+    MIMEJSON serialization/deserialization reproduce the same objects for trivial object.
+    """
     with mimejson.MIMEJSON() as mj:
         assert(mj.loads(mj.dumps({})) == {})
 
-def test_mimejson_trivial():
+
+def test_mimejson_is_json_equivalent_in_simple_cases():
+    """
+    MIMEJSON serialize JSON in a standard way.
+    """
     with mimejson.MIMEJSON() as mj:
-        for x in [{'a': 2}, {'a': [1, 2, 3]}, [1,2,3]]:
+        for x in [{'a': 2}, {'a': [1, 2, 3]}, [1, 2, 3]]:
             assert(mj.dumps(x) == json.dumps(x))
+
+
+def test_mimejson_load_serializers():
+    """
+    MIMEJSON has a set of native plugins distributed with it.
+    """
+    with mimejson.MIMEJSON() as mj:
+        assert(len(mj.codecs._register))

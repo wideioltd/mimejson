@@ -43,12 +43,13 @@ It is designed to
 """
 
 import errno
-import imp
 import json
 import logging
 import os
 import os.path
 import requests
+
+from .codec import CodecRegister
 
 JSON_ATOMS = (int, str, unicode, bool, float)
 
@@ -95,9 +96,14 @@ def _mkdir_p(path):
 
 
 class HTTPTransport(object):
+
+    """
+    Responsible for storing data/pulling on servers after serialization/deserialization.
+    """
+
     def __init__(self, server, user=None, password=None, session=None):
         """
-        Creates a HTTP transport for mimejson.
+        Create a HTTP transport for MIMEJSON.
         """
         self.url = server
         self.session = session or requests
@@ -120,81 +126,10 @@ class HTTPTransport(object):
         return json.loads(res.text)
 
 
-class Serializers(object):
-    instance = None
-
-    def __init__(self):
-        self.mime_codecs = {}
-
-    @classmethod
-    def get_instance(cls):
-        if cls.instance is None:
-            cls.instance = Serializers()
-
-            cls.instance._load_codecs(os.path.join(os.path.dirname(os.path.realpath(__file__)), "mimetype"))
-
-        return cls.instance
-
-    def _load_codecs(self, folder):
-        """
-        Load every codec mimetype from mimetype folder.
-
-        Codecs must be found in mimetype/codecs.py
-        with an Serializer class
-        """
-        for f in os.listdir(folder):
-            if os.path.isfile(f) and f.endswith("py") and not f.startswith("__init__"):
-                try:
-                    e = self._load_mimetype_module_file(os.path.join(folder, f), 'Serializer')
-                    if e is not None:
-                        self.register_codec(e)
-                except:
-                    logging.warning('mimejson: unable to load serialization module %r\n' % (f,))
-            elif os.path.isdir(f) and os.path.exists(os.path.join(f, "__init__.py")):
-                try:
-                    e = self._load_mimetype_module_file(os.path.join(folder, f), 'Serializer')
-                    if e is not None:
-                        self.register_codec(e)
-                except:
-                    logging.warning('mimejson: unable to load serialization module %r\n' % (f,))
-
-    def _load_mimetype_module_file(self, path, expected_class):
-        """
-        Return and load expected_class from path file.
-        """
-        if os.path.isfile(path):
-            mod_name, file_ext = os.path.splitext(os.path.basename(path))
-            if file_ext.lower() == '.py':
-                py_mod = imp.load_source(mod_name, path)
-            elif file_ext.lower() == '.pyc':
-                py_mod = imp.load_compiled(mod_name, path)
-        else:
-            mod_name = os.path.basename(path)
-            py_mod = imp.load_package(mod_name, path)
-
-        if hasattr(py_mod, expected_class):
-            return getattr(py_mod, expected_class)()
-        return None
-
-    def register_codec(self, codec):
-        """
-        Add codec to the list of register codecs.
-
-        mimetype can be string or tuple of string.
-        """
-        if isinstance(codec.mimetype, tuple):
-            for m in codec.mimetype:
-                self.mime_codecs[m] = codec
-        else:
-            self.mime_codecs[codec.mimetype] = codec
-
-    def __getitem__(self, item):
-        return self.mime_codecs[item]
-
-
 class MIMEJSON(object):
+
     """
-    Serializer/Deserializer for mimejson.
+    MIMEJSON Serialization Manager.
 
     FILE: This implementation is naive and uses a temporary storage for all the data that have to be transmitted
     TODO: make upload async and parallel
@@ -202,22 +137,20 @@ class MIMEJSON(object):
 
     def __init__(self, server=None, user=None, password=None, basepath=None, use_tmp_storage=True, session=None):
         """
-        Initialised the MIMEJSON serialiser.
+        Initialise the MIMEJSON serialiser.
 
-        If no arguments given the deserialize will not send to the server.
+        If no arguments given the decode will not send to the server.
         you can change those following variable after init.
         """
-        self.data = None  # < currently opened json
-        self.serializers = Serializers.get_instance()
+        self.codecs = CodecRegister.get_instance()
 
         self.storage = os.getcwd()
+        self.using_tmp_storage = use_tmp_storage
         if use_tmp_storage:
             self.storage = os.path.join("/tmp", ".mjson-" + str(os.getpid()))
 
         if basepath:
             self.storage = basepath
-
-        self.using_tmp_storage = use_tmp_storage
 
         self.session = session or requests
         self.transport = None
@@ -227,31 +160,31 @@ class MIMEJSON(object):
         if server is not None and user is not None and password is not None:
             self.transport = HTTPTransport(server, user, password, session)
 
-    def __mimejson_serialize_item(self, obj, key):
+    def __mimejson_encode_item(self, obj, key):
         ret = obj
-        for mc in self.serializers.mime_codecs.items():
+        for mc in self.codecs._register.items():
             can_apply = mc[1].can_apply
             if can_apply(obj):
-                ret = mc[1].serialize(obj, self.storage)
+                ret = mc[1].encode(obj, self.storage)
 
-                # store serialized file for future transmission
+                # store encoded file for future transmission
                 if key is not None and '$path$' in ret:
-                    c = self.serializers['file']
-                    self._objects[key] = c.deserialize(ret, ret['$path$'])
+                    c = self.codecs['file']
+                    self._objects[key] = c.decode(ret, ret['$path$'])
 
         return ret
 
-    def __mimejson_deserialize_item(self, obj, key):
+    def __mimejson_decode_item(self, obj, key):
         # for each obj of the dictionary, this fct is call
         if isinstance(obj, dict) and "$mimetype$" in obj:
-            if (obj["$mimetype$"]) in self.serializers.mime_codecs:
+            if (obj["$mimetype$"]) in self.codecs._register:
                 path = obj['$path$']
                 f = None
                 if path.startswith("http"):
                     f = self.session.get(obj['$path$']).content
                     path = f[0]
 
-                obj = self.serializers.mime_codecs[obj["$mimetype$"]].deserialize(obj, path)
+                obj = self.codecs._register[obj["$mimetype$"]].decode(obj, path)
 
                 if f is not None:
                     os.unlink(f[0])
@@ -259,55 +192,46 @@ class MIMEJSON(object):
                 logging.warning("mimejson: unsupported mimetype: %s\n" % (obj['$mimetype$'],))
         return obj
 
-    def _mimejson_serialize_object(self, obj):
-        return _xmap(obj, self.__mimejson_serialize_item)
+    def _mimejson_encode_object(self, obj):
+        return _xmap(obj, self.__mimejson_encode_item)
 
-    def _mimejson_deserialize_object(self, obj):
-        return _xmap(obj, self.__mimejson_deserialize_item)
+    def _mimejson_decode_object(self, obj):
+        return _xmap(obj, self.__mimejson_decode_item)
 
-    def _deserialize_all(self):
+    def _dump(self, data):
         """
-        Deserialize jsondict $path$ (path/url) into object (from mimetype)
-        need a mimejson dict loaded to work
-        """
-        self.data = self._mimejson_deserialize_object(self.data)
+        Encode an object and push the encoded object to the server.
 
-    def _serialize_all(self):
+        :return: a mimejson object with reference to encoded elements
         """
-        Serialize in self.pathdir and send toward server if loaded.
-        need a mimejson dict loaded to work
-        change self.pathdir to change the path of serialized files
+        data = self._mimejson_encode_object(data)
+        return json.dumps(data)
+
+    def push(self, data, url):
         """
-        self.data = self._mimejson_serialize_object(self.data)
+        Use MIMEJSON Serializer and its associated transport as a way to make a multipart query on a server.
 
-    def _dump(self, data=None, send=True, url=None):
+        :param data: The object to be sent
+        :param url: the endpoint to be queried
+        :return: response from the API endpoint (assumed to be MIMEJSON)
         """
-        Serialize and object and push the serialize object to the server.
-
-        :return: a mimejson object with reference to serialized elements
-        """
-        if data is not None:
-            self.data = data
-
-        self._serialize_all()
-        return json.dumps(self.data)
-
-    def push(self, data=None, url=None):
-        self._dump()
+        data = self._dump(data)
         if not self.transport:
             raise ValueError("Not connected")
-        data = {}
-        for k in self.data:
-            if type(self.data[k]) not in JSON_ATOMS:
-                data[k] = json.dumps(self.data[k])  # ENSURE ALL DATA ARE COMPATBLE
-            else:
-                data[k] = self.data[k]
+
+        # clean_data = {}
+        # for k in data:
+        #     if type(self.data[k]) not in JSON_ATOMS:
+        #         clean_data[k] = json.dumps(data[k])  # ENSURE ALL DATA ARE COMPATBLE
+        #     else:
+        #         clean_data[k] = data[k]
 
         result = self.transport.send(data=data, files=self._objects, url=url)
 
         for k in self._objects:
             self._objects[k].close()
         self._objects = {}
+
         return result
 
     def dumps(self, data, url=None):
@@ -322,39 +246,40 @@ class MIMEJSON(object):
         """
         if os.path.isfile(uri):
             json_file = open(uri, 'r+')
-            self.data = json.load(json_file)
+            data = json.load(json_file)
             json_file.close()
         else:
-            self.data = self.session.get(uri).json()
+            data = self.session.get(uri).json()
 
-        self._deserialize_all()
-        return self.data
+        data = self._mimejson_decode_object(data)
+        return data
 
     def loads(self, data):
         """
         Load object from string json.
         """
-        self.data = json.loads(data)
-        self._deserialize_all()
-        return self.data
+        data = self._mimejson_decode_object(json.loads(data))
+        return data
 
     def loadd(self, object_instance):
         """
         Load object from dict.
         """
-        self.data = object_instance
-        self._deserialize_all()
-        return self.data
+        data = self._mimejson_decode_object(object_instance)
+        return data
 
+    # current implementation requires a temporary folder
+    # with pattern ensures this folder is created and deleted as necessary
     def __enter__(self):
         if os.path.exists(self.storage) and self.using_tmp_storage:
             errmsg = """
-            temporary folder %s must be a non existent folder as it will be deleted after completion of the program
+            Temporary folder %s must be a non-existent as it will be deleted on exit
             """ % (self.storage,)
             raise Exception(errmsg)
 
         if not os.path.exists(self.storage):
             _mkdir_p(self.storage)
+            os.chmod(self.storage, 0o700)
         return self
 
     def __exit__(self, *_args):
