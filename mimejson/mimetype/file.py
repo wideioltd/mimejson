@@ -33,11 +33,17 @@ import uuid
 
 
 class Serializer:
+    """
+    Naive serializer to store opened files to files.
+
+    Used internally for tests and API upload
+    """
+
     mimetype = ("file", "application/bytes")
 
     @staticmethod
     def can_apply(obj):
-        return isinstance(obj, file)
+        return hasattr(obj, 'read')
 
     @classmethod
     def serialize(cls, obj, pathdir):
