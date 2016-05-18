@@ -47,11 +47,16 @@ import json
 import logging
 import os
 import os.path
+import sys
+
 import requests
 
 from .codec import CodecRegister
 
-JSON_ATOMS = (int, str, unicode, bool, float)
+if sys.version_info >= (3, 0):
+    JSON_ATOMS = (int, str, bytes, bool, float)
+else:
+    JSON_ATOMS = (int, str, unicode, bool, float)
 
 #
 # utility functions
