@@ -212,11 +212,11 @@ class MIMEJSON(object):
     def _mimejson_decode_object(self, obj):
         return _xmap(obj, self.__mimejson_decode_item)
 
-    def _dump(self, data):
+    def dumps(self, data):
         """
-        Encode an object and push the encoded object to the server.
+        Encode an object and store associated objects in storage.
 
-        :return: a mimejson object with reference to encoded elements
+        :return: a mimejson encoded object with reference to stored elements
         """
         data = self._mimejson_encode_object(data)
         return json.dumps(data)
@@ -229,16 +229,9 @@ class MIMEJSON(object):
         :param url: the endpoint to be queried
         :return: response from the API endpoint (assumed to be MIMEJSON)
         """
-        data = self._dump(data)
+        data = self._mimejson_encode_object(data)
         if not self.transport:
             raise ValueError("Not connected")
-
-        # clean_data = {}
-        # for k in data:
-        #     if type(self.data[k]) not in JSON_ATOMS:
-        #         clean_data[k] = json.dumps(data[k])  # ENSURE ALL DATA ARE COMPATBLE
-        #     else:
-        #         clean_data[k] = data[k]
 
         result = self.transport.send(data=data, files=self._objects, url=url)
 
@@ -247,12 +240,6 @@ class MIMEJSON(object):
         self._objects = {}
 
         return result
-
-    def dumps(self, data, url=None):
-        """
-        Dump to a mimejson string WITHOUT transporting the data.
-        """
-        return self._dump(data=data)
 
     def load(self, uri):
         """
