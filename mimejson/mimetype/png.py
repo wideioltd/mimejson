@@ -47,12 +47,12 @@ class Serializer:
             [PIL.PngImagePlugin.PngImageFile, PIL.Image.Image]
 
     @classmethod
-    def serialize(cls, obj, pathdir):
+    def encode(cls, obj, pathdir):
         fn = os.path.join(pathdir, "%s.png" % (uuid.uuid1(),))
         obj.save(fn)
         return {'$path$': fn, '$length$': os.stat(fn).st_size,
                 '$mimetype$': cls.mimetype}
 
     @staticmethod
-    def deserialize(obj, pathdir):
+    def decode(obj, pathdir):
         return PIL.Image.open(os.path.join(pathdir, obj['$path$']))

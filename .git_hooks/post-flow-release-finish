@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Runs at the end of git flow release finish
+#
+# Positional arguments:
+# $1    The version (including the version prefix)
+# $2    The origin remote
+# $3    The full branch name (including the release prefix)
+#
+VERSION=$1
+ORIGIN=$2
+BRANCH=$3
+
+echo "pushing to remote"
+git push origin master
+git push origin develop
+git push --tags
+
+echo "pushing to pypi"
+rm -r dist/*
+python setup.py sdist bdist_wheel
+PYPIACCOUNT=$HOME/.pypi.account
+[ -f $PWD/.pypi.account ] && PYPIACCOUNT=$PWD/.pypi.account
+twine register dist/*.whl -u $(cut -d : -f 1 < $PYPIACCOUNT) -p $(cut -d : -f 2 < $PYPIACCOUNT)

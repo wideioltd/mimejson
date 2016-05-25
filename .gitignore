@@ -12,3 +12,5 @@ coverage.xml
 *.swp
 *~
 *.bak
+.tox
+.cache

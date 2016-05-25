@@ -30,18 +30,48 @@
 # |D|O|N|O|T|R|E|M|O|V|E|!|D|O|N|O|T|R|E|M|O|V|E|!|D|O|N|O|T|R|E|M|O|V|E|!|
 # ############################################################################
 
-import sys
+import json
 import os
+import sys
+
+import mimejson
+import numpy
+
 sys.path.append(os.getcwd())
 
-import json
-import mimejson
 
 def test_mimejson_trivial_object():
+    """
+    MIMEJSON serialization/deserialization reproduce the same objects for trivial object.
+    """
     with mimejson.MIMEJSON() as mj:
         assert(mj.loads(mj.dumps({})) == {})
 
-def test_mimejson_trivial():
+
+def test_mimejson_is_json_equivalent_in_simple_cases():
+    """
+    MIMEJSON serialize JSON in a standard way.
+    """
     with mimejson.MIMEJSON() as mj:
-        for x in [{'a': 2}, {'a': [1, 2, 3]}, [1,2,3]]:
+        for x in [{'a': 2}, {'a': [1, 2, 3]}, [1, 2, 3]]:
             assert(mj.dumps(x) == json.dumps(x))
+
+
+def test_mimejson_load_default_codecs():
+    """
+    MIMEJSON has a set of native plugins distributed with it.
+    """
+    with mimejson.MIMEJSON() as mj:
+        assert(len(mj.codecs.all_codecs))
+
+
+def test_mimejson_encodes_large_arrays():
+    """
+    MIMEJSON has a set of native plugins distributed with it.
+    """
+    # a=numpy.random.random((20,20))
+    a = numpy.eye(20)
+    with mimejson.MIMEJSON() as mj:
+        ea = mj.dumps({'a': a})
+        ra = mj.loads(ea)['a']
+        assert(((ra - a) == 0).all())

@@ -31,33 +31,27 @@
 import os
 import uuid
 
+import numpy
+
 
 class Serializer:
     """
-    Naive serializer to store opened files to files.
-
-    Used internally for tests and API upload
+    MIMEJSON serializer that transmits numerical data.
     """
 
-    mimetype = ("file", "application/bytes")
+    mimetype = "application/npz"
 
     @staticmethod
     def can_apply(obj):
-        return hasattr(obj, 'read')
+        return hasattr(obj, "__class__") and isinstance(obj, numpy.ndarray)
 
     @classmethod
     def encode(cls, obj, pathdir):
-        if (hasattr(obj, "name")) and (os.path.exists(obj.name)):
-            return {'$path$': obj.name, '$length$': os.stat(obj.name).st_size,
-                    '$mimetype$': cls.mimetype[-1]}
-        fn = os.path.join(pathdir, "%s_package" % (uuid.uuid1(),))
-        with open(fn, 'w') as out:
-            out.write(obj.read())
-            out.close()
-        obj.close()
+        fn = os.path.join(pathdir, "%s.npz" % (uuid.uuid1(),))
+        numpy.save(open(fn,"wb"),obj)
         return {'$path$': fn, '$length$': os.stat(fn).st_size,
-                '$mimetype$': cls.mimetype[-1]}
+                '$mimetype$': cls.mimetype}
 
     @staticmethod
     def decode(obj, pathdir):
-        return open(pathdir, 'r')
+        return numpy.load(os.path.join(pathdir, obj['$path$']))

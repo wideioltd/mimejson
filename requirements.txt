@@ -1,4 +1,6 @@
 mock
-py.test
+pytest
 behave
+requests
+numpy
 

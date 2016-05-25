@@ -1,5 +1,5 @@
 """
-MIMEJSON Serialization
+MIMEJSON Serialization.
 
 MIMEJSON extends JSON to allow automatically serialization of large binary objects as "attached" objects.
 
@@ -8,6 +8,7 @@ of MIMEJSON is likely to evolve through iteration.
 """
 import os
 from .mimejson import MIMEJSON
+from .codec import CodecRegister
 
 __version__ = open(os.path.join(os.path.dirname(__file__), "VERSION"), "r").read()
-__all__ = (MIMEJSON, __version__)
+__all__ = ('MIMEJSON', 'CodecRegister', '__version__')

@@ -1,0 +1,6 @@
+include *.py *.md *.ini *.json *.in
+recursive-include mimejson *.py *.md *.json
+recursive-include tests *.py *.md *.json 
+include LICENSE
+include mimejson/VERSION
+include requirements.txt

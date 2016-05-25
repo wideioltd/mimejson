@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/a2a36d1e8d0e40c5b5d26878998492fb)](https://www.codacy.com/app/bn/mimejson?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=wideioltd/mimejson&amp;utm_campaign=Badge_Grade)
 # MIMEJSON
 
 MIMEJSON is a minimal extension to JSON to allow to perform serialisation and transport of
@@ -86,3 +87,8 @@ MIMEJSON is released under a BSD-style license.
 ## About us
 
 MIMEJSON is developed and supported by [WIDE IO LTD](http://www.wide.io) .
+
+## Developers
+
+If you are using tox to run the tests - please ensure to put numpy in
+the pip cache using `pip wheel numpy`.
