@@ -46,7 +46,7 @@ class Serializer:
         return hasattr(obj, "__class__") and obj.__class__ in cl
 
     @classmethod
-    def serialize(cls, obj, pathdir):
+    def encode(cls, obj, pathdir):
         if not os.path.exists(pathdir):
             os.mkdir(pathdir)
         fn = os.path.join(pathdir, "%s.jpg" % (uuid.uuid1(),))
@@ -55,5 +55,5 @@ class Serializer:
                 '$mimetype$': cls.mimetype}
 
     @staticmethod
-    def deserialize(obj, filepath):
+    def decode(obj, filepath):
         return PIL.Image.open(filepath)

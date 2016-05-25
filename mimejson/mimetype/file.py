@@ -46,7 +46,7 @@ class Serializer:
         return hasattr(obj, 'read')
 
     @classmethod
-    def serialize(cls, obj, pathdir):
+    def encode(cls, obj, pathdir):
         if (hasattr(obj, "name")) and (os.path.exists(obj.name)):
             return {'$path$': obj.name, '$length$': os.stat(obj.name).st_size,
                     '$mimetype$': cls.mimetype[-1]}
@@ -59,5 +59,5 @@ class Serializer:
                 '$mimetype$': cls.mimetype[-1]}
 
     @staticmethod
-    def deserialize(obj, pathdir):
+    def decode(obj, pathdir):
         return open(pathdir, 'r')
