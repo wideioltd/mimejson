@@ -76,7 +76,7 @@ def _xmap(obj, fct, key=None):
             obj = [_xmap(item, fct) for item in obj]
         elif isinstance(obj, dict):
             obj = dict([
-                (k[0], _xmap(v, fct, key=k))
+                (k, _xmap(v, fct, key=k))
                 for k, v in obj.items()
             ])
         elif isinstance(obj, tuple):
@@ -194,7 +194,6 @@ class MIMEJSON(object):
         return ret
 
     def __mimejson_decode_item(self, obj, key):
-        # for each obj of the dictionary, this fct is call
         if isinstance(obj, dict) and "$mimetype$" in obj:
             if obj["$mimetype$"] in self.codecs.all_codecs:
                 path = obj['$path$']
