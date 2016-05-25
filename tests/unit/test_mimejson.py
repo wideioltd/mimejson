@@ -33,8 +33,9 @@
 import json
 import os
 import sys
-import numpy
+
 import mimejson
+import numpy
 
 sys.path.append(os.getcwd())
 
@@ -65,16 +66,12 @@ def test_mimejson_load_default_codecs():
 
 
 def test_mimejson_encodes_large_arrays():
-     """
-     MIMEJSON has a set of native plugins distributed with it.
-     """
-     #a=numpy.random.random((20,20))
-     a=numpy.eye(20)
-     with mimejson.MIMEJSON() as mj:
-        ea=mj.dumps({'a': a})
-        print ea
-        ra=mj.loads(ea)['a']
-        print ra
-        assert(((ra-a)==0).all())
-    
-     
+    """
+    MIMEJSON has a set of native plugins distributed with it.
+    """
+    # a=numpy.random.random((20,20))
+    a = numpy.eye(20)
+    with mimejson.MIMEJSON() as mj:
+        ea = mj.dumps({'a': a})
+        ra = mj.loads(ea)['a']
+        assert(((ra - a) == 0).all())

@@ -87,3 +87,8 @@ MIMEJSON is released under a BSD-style license.
 ## About us
 
 MIMEJSON is developed and supported by [WIDE IO LTD](http://www.wide.io) .
+
+## Developers
+
+If you are using tox to run the tests - please ensure to put numpy in
+the pip cache using `pip wheel numpy`.
