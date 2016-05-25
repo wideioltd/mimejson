@@ -11,7 +11,8 @@ ORIGIN=$2
 BRANCH=$3
 
 echo "pushing to remote"
-git push
+git push origin master
+git push origin develop
 git push --tags
 
 echo "pushing to pypi"
