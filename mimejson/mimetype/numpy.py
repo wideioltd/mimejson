@@ -1,7 +1,6 @@
-#!/usr/bin/env python2
 # ############################################################################
 # |W|I|D|E|I|O|L|T|D|W|I|D|E|I|O|L|T|D|W|I|D|E|I|O|L|T|D|W|I|D|E|I|O|L|T|D|
-# Copyright (c) WIDE IO LTD 2014-2016
+# Copyright (c) WIDE IO LTD
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,52 +28,30 @@
 # SUCH DAMAGE.
 # |D|O|N|O|T|R|E|M|O|V|E|!|D|O|N|O|T|R|E|M|O|V|E|!|D|O|N|O|T|R|E|M|O|V|E|!|
 # ############################################################################
-
-import json
 import os
-import sys
+import uuid
+
 import numpy
-import mimejson
-
-sys.path.append(os.getcwd())
 
 
-def test_mimejson_trivial_object():
+class Serializer:
     """
-    MIMEJSON serialization/deserialization reproduce the same objects for trivial object.
+    MIMEJSON serializer that transmits numerical data.
     """
-    with mimejson.MIMEJSON() as mj:
-        assert(mj.loads(mj.dumps({})) == {})
 
+    mimetype = "application/npz"
 
-def test_mimejson_is_json_equivalent_in_simple_cases():
-    """
-    MIMEJSON serialize JSON in a standard way.
-    """
-    with mimejson.MIMEJSON() as mj:
-        for x in [{'a': 2}, {'a': [1, 2, 3]}, [1, 2, 3]]:
-            assert(mj.dumps(x) == json.dumps(x))
+    @staticmethod
+    def can_apply(obj):
+        return hasattr(obj, "__class__") and isinstance(obj, numpy.ndarray)
 
+    @classmethod
+    def encode(cls, obj, pathdir):
+        fn = os.path.join(pathdir, "%s.npz" % (uuid.uuid1(),))
+        numpy.save(open(fn,"wb"),obj)
+        return {'$path$': fn, '$length$': os.stat(fn).st_size,
+                '$mimetype$': cls.mimetype}
 
-def test_mimejson_load_default_codecs():
-    """
-    MIMEJSON has a set of native plugins distributed with it.
-    """
-    with mimejson.MIMEJSON() as mj:
-        assert(len(mj.codecs.all_codecs))
-
-
-def test_mimejson_encodes_large_arrays():
-     """
-     MIMEJSON has a set of native plugins distributed with it.
-     """
-     #a=numpy.random.random((20,20))
-     a=numpy.eye(20)
-     with mimejson.MIMEJSON() as mj:
-        ea=mj.dumps({'a': a})
-        print ea
-        ra=mj.loads(ea)['a']
-        print ra
-        assert(((ra-a)==0).all())
-    
-     
+    @staticmethod
+    def decode(obj, pathdir):
+        return numpy.load(os.path.join(pathdir, obj['$path$']))
